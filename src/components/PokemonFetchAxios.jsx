@@ -23,25 +23,41 @@ const typeColors = {
   steel: "bg-gray-500",
 };
 
-const PokemonFetchAxios = () => {
+const PokemonFetch = () => {
   const [pokemonList, setPokemonList] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAllPokemon = async () => {
       try {
-        // Fetch initial list of Pokémon
-   
+        const response = await axios.get(
+          "https://pokeapi.co/api/v2/pokemon?limit=1000"
+        );
+        // const data = await response.data;
 
-        // Sequentially fetch details for each Pokémon
-     
-
-        // Update the state with the detailed Pokémon data
-    
+        const pokemonData = [];
+        for (const pokemon of response.data.results) {
+          const res = await axios.get(pokemon.url);
+          console.log(res);
+          pokemonData.push(res.data);
+        }
+        // console.log(pokemonData);
+        setPokemonList(pokemonData);
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
     };
-// invoke function
-
+    fetchAllPokemon();
   }, []);
-
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-4xl font-bold mb-6">Pokemon List</h1>
@@ -50,7 +66,6 @@ const PokemonFetchAxios = () => {
           <div key={pokemon.id} className="bg-white rounded shadow-md p-4">
             <h2 className="text-xl font-bold mb-2 capitalize">
               {pokemon.name}
-              {/* {console.log(pokemon)} */}
             </h2>
             <img
               src={pokemon.sprites.front_default}
@@ -76,4 +91,4 @@ const PokemonFetchAxios = () => {
   );
 };
 
-export default PokemonFetchAxios;
+export default PokemonFetch;

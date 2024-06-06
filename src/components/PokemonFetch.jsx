@@ -24,20 +24,42 @@ const typeColors = {
 
 const PokemonFetch = () => {
   const [pokemonList, setPokemonList] = useState([]);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAllPokemon = async () => {
       try {
-        // Fetch initial list of Pokémon
-        // Sequentially fetch details for each Pokémon
-        // Update the state with the detailed Pokémon data
+        const response = await fetch(
+          "https://pokeapi.co/api/v2/pokemon?limit=1000"
+        );
+        if (!response.ok) {
+          throw new Error("error");
+        }
+        const data = await response.json();
+        const pokemonData = [];
+        console.log(data);
+        for (const pokemon of data.results) {
+          const res = await fetch(pokemon.url);
+          const pokemonInfo = await res.json();
+          pokemonData.push(pokemonInfo);
+        }
+        console.log(pokemonData);
+        setPokemonList(pokemonData);
       } catch (error) {
-        console.error("Failed to fetch Pokémon:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
     };
-    // invoke function
+    fetchAllPokemon();
   }, []);
-
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
       <h1 className="text-4xl font-bold mb-6">Pokemon List</h1>
